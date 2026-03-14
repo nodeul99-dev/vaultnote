@@ -1,0 +1,39 @@
+{
+  "name": "quicknote",
+  "version": "1.0.0",
+  "description": "Obsidian 연동 포스트잇 메모 앱",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build-win": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.quicknote.app",
+    "productName": "QuickNote",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0",
+    "electron-packager": "^17.1.2"
+  }
+}

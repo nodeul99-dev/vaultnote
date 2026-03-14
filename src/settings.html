@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>QuickNote 설정</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+      background: #FFFDE7;
+      color: #3E2723;
+      padding: 28px 32px;
+      height: 100vh;
+    }
+
+    h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #5D4037;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #FFEE58;
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #5D4037;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1px solid #FFCC02;
+      border-radius: 6px;
+      background: #FFFFF0;
+      font-size: 13px;
+      color: #3E2723;
+      outline: none;
+    }
+    input[type="text"]:focus { border-color: #F9A825; }
+
+    .hint {
+      font-size: 11px;
+      color: #8D6E63;
+      margin-top: 4px;
+    }
+
+    button {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+    button:hover { opacity: 0.8; }
+
+    #btn-browse {
+      background: #FFEE58;
+      color: #5D4037;
+      white-space: nowrap;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    #btn-cancel { background: #EEE; color: #555; }
+    #btn-save   { background: #F9A825; color: #3E2723; }
+
+    #status {
+      font-size: 12px;
+      color: #c62828;
+      min-height: 18px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>⚙️ QuickNote 설정</h1>
+
+  <div class="field">
+    <label>Obsidian Vault 경로</label>
+    <div class="input-row">
+      <input type="text" id="vault-path" placeholder="Vault 폴더를 선택하세요" readonly />
+      <button id="btn-browse">폴더 선택</button>
+    </div>
+    <div class="hint">메모가 {Vault}/QuickNotes/YYYY-MM-DD/ 폴더에 저장됩니다.</div>
+  </div>
+
+  <div class="field">
+    <label>글로벌 단축키</label>
+    <input type="text" id="shortcut" placeholder="예: Ctrl+Shift+N" />
+    <div class="hint">앱이 백그라운드에 있을 때도 새 메모 창을 띄웁니다.</div>
+  </div>
+
+  <div class="field">
+    <div class="input-row" style="-webkit-app-region:no-drag">
+      <input type="checkbox" id="auto-start" style="width:16px;height:16px;cursor:pointer;accent-color:#F9A825;" />
+      <label for="auto-start" style="margin:0;cursor:pointer;font-weight:600;">Windows 시작 시 자동 실행</label>
+    </div>
+    <div class="hint">로그인하면 QuickNote가 트레이에 자동으로 시작됩니다.</div>
+  </div>
+
+  <div id="status"></div>
+
+  <div class="actions">
+    <button id="btn-cancel">취소</button>
+    <button id="btn-save">저장</button>
+  </div>
+
+  <script>
+    const vaultPathInput = document.getElementById('vault-path');
+    const shortcutInput = document.getElementById('shortcut');
+    const autoStartChk = document.getElementById('auto-start');
+    const statusEl = document.getElementById('status');
+
+    // 현재 설정 로드
+    Promise.all([window.api.getConfig(), window.api.getAutoLogin()]).then(([cfg, autoLogin]) => {
+      vaultPathInput.value = cfg.vaultPath || '';
+      shortcutInput.value = cfg.shortcut || 'Ctrl+Shift+N';
+      autoStartChk.checked = autoLogin;
+    });
+
+    document.getElementById('btn-browse').addEventListener('click', async () => {
+      const selected = await window.api.selectVault();
+      if (selected) vaultPathInput.value = selected;
+    });
+
+    document.getElementById('btn-save').addEventListener('click', async () => {
+      const vaultPath = vaultPathInput.value.trim();
+      const shortcut = shortcutInput.value.trim() || 'Ctrl+Shift+N';
+
+      if (!vaultPath) {
+        statusEl.textContent = 'Vault 경로를 선택해주세요.';
+        return;
+      }
+
+      await window.api.setConfig({ vaultPath, shortcut, autoStart: autoStartChk.checked });
+      statusEl.style.color = '#2e7d32';
+      statusEl.textContent = '저장되었습니다!';
+      setTimeout(() => window.api.closeWindow(), 800);
+    });
+
+    document.getElementById('btn-cancel').addEventListener('click', () => {
+      window.api.closeWindow();
+    });
+  </script>
+</body>
+</html>
