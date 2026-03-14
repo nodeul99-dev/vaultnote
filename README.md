@@ -1,4 +1,4 @@
-# QuickNote
+# VaultNote
 
 > Obsidian Vault에 바로 저장되는 포스트잇 메모 앱
 
@@ -10,7 +10,7 @@
 
 ## 소개
 
-QuickNote는 Windows용 데스크톱 메모 앱입니다.
+VaultNote는 Windows용 데스크톱 메모 앱입니다.
 포스트잇처럼 화면에 띄워두고 빠르게 메모하면, **Obsidian Vault에 `.md` 파일로 자동 저장**됩니다.
 
 별도의 동기화 설정 없이 Obsidian에서 바로 열어볼 수 있어요.
@@ -69,10 +69,10 @@ npm install
 npm start
 
 # Windows 실행파일 빌드
-npx electron-packager . QuickNote --platform=win32 --arch=x64 --out=dist --overwrite
+npx electron-packager . VaultNote --platform=win32 --arch=x64 --out=dist --overwrite
 ```
 
-빌드 후 `dist/QuickNote-win32-x64/QuickNote.exe` 를 실행하거나 바탕화면에 바로가기를 만들어 사용합니다.
+빌드 후 `dist/VaultNote-win32-x64/VaultNote.exe` 를 실행하거나 바탕화면에 바로가기를 만들어 사용합니다.
 
 ---
 

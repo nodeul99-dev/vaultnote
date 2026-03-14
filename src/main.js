@@ -128,7 +128,7 @@ function createSettingsWindow() {
     height: 360,
     resizable: false,
     frame: true,
-    title: 'QuickNote 설정',
+    title: 'VaultNote 설정',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -151,7 +151,7 @@ function createTray() {
   }
 
   tray = new Tray(icon);
-  tray.setToolTip('QuickNote');
+  tray.setToolTip('VaultNote');
 
   const menu = Menu.buildFromTemplate([
     { label: '새 메모', click: () => createNoteWindow() },
@@ -204,7 +204,7 @@ ipcMain.handle('config:set', (_, newConfig) => {
   // 자동 시작 설정 반영
   app.setLoginItemSettings({
     openAtLogin: !!config.autoStart,
-    name: 'QuickNote',
+    name: 'VaultNote',
   });
   return config;
 });

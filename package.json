@@ -1,5 +1,5 @@
 {
-  "name": "quicknote",
+  "name": "vaultnote",
   "version": "1.0.0",
   "description": "Obsidian 연동 포스트잇 메모 앱",
   "main": "src/main.js",
@@ -8,8 +8,8 @@
     "build-win": "electron-builder --win"
   },
   "build": {
-    "appId": "com.quicknote.app",
-    "productName": "QuickNote",
+    "appId": "com.vaultnote.app",
+    "productName": "VaultNote",
     "files": [
       "src/**/*",
       "package.json"

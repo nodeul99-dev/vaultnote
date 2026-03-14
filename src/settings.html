@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>QuickNote 설정</title>
+  <title>VaultNote 설정</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -95,7 +95,7 @@
   </style>
 </head>
 <body>
-  <h1>⚙️ QuickNote 설정</h1>
+  <h1>⚙️ VaultNote 설정</h1>
 
   <div class="field">
     <label>Obsidian Vault 경로</label>
@@ -103,7 +103,7 @@
       <input type="text" id="vault-path" placeholder="Vault 폴더를 선택하세요" readonly />
       <button id="btn-browse">폴더 선택</button>
     </div>
-    <div class="hint">메모가 {Vault}/QuickNotes/YYYY-MM-DD/ 폴더에 저장됩니다.</div>
+    <div class="hint">메모가 Vault 루트에 YYYY-MM-DD-HHmm.md 형식으로 저장됩니다.</div>
   </div>
 
   <div class="field">
@@ -117,7 +117,7 @@
       <input type="checkbox" id="auto-start" style="width:16px;height:16px;cursor:pointer;accent-color:#F9A825;" />
       <label for="auto-start" style="margin:0;cursor:pointer;font-weight:600;">Windows 시작 시 자동 실행</label>
     </div>
-    <div class="hint">로그인하면 QuickNote가 트레이에 자동으로 시작됩니다.</div>
+    <div class="hint">로그인하면 VaultNote가 트레이에 자동으로 시작됩니다.</div>
   </div>
 
   <div id="status"></div>
