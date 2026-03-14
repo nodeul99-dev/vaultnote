@@ -1,6 +1,6 @@
 # VaultNote
 
-> Obsidian Vault에 바로 저장되는 포스트잇 메모 앱
+> **Sticky notes that live inside your Obsidian Vault.**
 
 ![Electron](https://img.shields.io/badge/Electron-28-47848F?style=flat&logo=electron)
 ![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?style=flat&logo=windows)
@@ -8,87 +8,117 @@
 
 ---
 
-## 소개
+## What is VaultNote?
+
+You have great ideas at random moments. But switching to Obsidian, creating a file, typing a title — by the time you're done, the thought is gone.
+
+**VaultNote solves this.**
+
+Press `Ctrl+Shift+N` — a sticky note appears instantly on your screen. Write your thought. Close it. Done.
+Your note is already waiting for you in Obsidian, properly formatted with frontmatter and tags.
+
+No cloud sync. No extra app. No friction. Just your thought, captured.
+
+---
+
+## Features
+
+- **⚡ Global shortcut** `Ctrl+Shift+N` — summon a new note from anywhere, instantly
+- **💾 Auto-save on close** — just close the note, it saves itself to your Vault
+- **🏷️ Auto tag extraction** — write `#tag` inline, frontmatter is generated automatically
+- **🎨 5 color themes** — warm, handcrafted palette inspired by real sticky notes
+- **🪟 Multi-window** — keep multiple notes floating on your screen simultaneously
+- **👻 Ghost UI** — looks like a plain sticky note; hover the top edge to reveal controls
+- **📌 System tray** — lives quietly in the background, always ready
+- **🚀 Launch on startup** — optional auto-start with Windows
+
+---
+
+## How it saves
+
+Every note becomes a clean Markdown file directly in your Vault root:
+
+```
+{YourVault}/2026-03-14-1523.md
+```
+
+```markdown
+---
+created: 2026-03-14T15:23:00
+tags: [idea, todo]
+---
+
+Your note content here
+
+#idea #todo
+```
+
+No subfolders. No special plugins. Just files that Obsidian already knows how to read.
+
+---
+
+## Color Themes
+
+| 햇살 | 새잎 | 여명 | 벚꽃 | 노을 |
+|:----:|:----:|:----:|:----:|:----:|
+| 🌕 Honey | 🌿 Mint | 💜 Lavender | 🌸 Rose | 🍑 Peach |
+
+---
+
+## Getting Started
+
+```bash
+git clone https://github.com/nodeul99-dev/vaultnote.git
+cd vaultnote
+npm install
+npm start
+```
+
+**Build a standalone `.exe`:**
+```bash
+npx electron-packager . VaultNote --platform=win32 --arch=x64 --out=dist --overwrite
+```
+
+Run `dist/VaultNote-win32-x64/VaultNote.exe` — or create a desktop shortcut.
+
+On first launch, a setup window will ask for your Obsidian Vault folder. That's it.
+
+---
+
+## Tech Stack
+
+- [Electron](https://www.electronjs.org/) v28
+- Vanilla JavaScript — no bundler, no framework
+- electron-packager
+
+---
+
+---
+
+## 소개 (한국어)
 
 VaultNote는 Windows용 데스크톱 메모 앱입니다.
 포스트잇처럼 화면에 띄워두고 빠르게 메모하면, **Obsidian Vault에 `.md` 파일로 자동 저장**됩니다.
 
 별도의 동기화 설정 없이 Obsidian에서 바로 열어볼 수 있어요.
 
----
-
-## 주요 기능
+### 주요 기능
 
 - **글로벌 단축키** `Ctrl+Shift+N` — 앱이 백그라운드에 있어도 새 메모 즉시 생성
 - **자동 저장** — X 버튼 클릭 시 Vault에 저장 후 닫힘
 - **Frontmatter 자동 생성** — `created`, `tags` (`#태그` 자동 파싱)
-- **5가지 색상 테마** — Post-it Floral Fantasy 컬렉션 기반
+- **5가지 색상 테마** — 독자적인 한국어 이름의 파스텔 팔레트
 - **다중 창** — 여러 메모를 동시에 띄울 수 있음
 - **미니멀 UI** — 평소엔 한 장의 메모지처럼, 상단에 커서를 올리면 메뉴 등장
 - **시스템 트레이 상주** — 창을 모두 닫아도 백그라운드에서 계속 실행
 - **Windows 시작 시 자동 실행** 옵션
 
----
-
-## 저장 형식
-
-메모를 저장하면 Vault 루트에 아래 형식으로 파일이 생성됩니다.
-
-```
-{VaultPath}/2026-03-14-1523.md
-```
-
-```markdown
----
-created: 2026-03-14T15:23:00
-tags: [아이디어, 할일]
----
-
-오늘 할 일 정리
-
-#아이디어 #할일
-```
-
----
-
-## 색상 테마
-
-| Sunnyside | Limeade | Blue Paradise | Positively Pink | Guava |
-|:---------:|:-------:|:-------------:|:---------------:|:-----:|
-| 🟡 | 🟢 | 🔵 | 🩷 | 🟠 |
-
----
-
-## 실행 방법
+### 실행 방법
 
 ```bash
-# 의존성 설치
 npm install
-
-# 개발 실행
 npm start
-
-# Windows 실행파일 빌드
-npx electron-packager . VaultNote --platform=win32 --arch=x64 --out=dist --overwrite
 ```
 
-빌드 후 `dist/VaultNote-win32-x64/VaultNote.exe` 를 실행하거나 바탕화면에 바로가기를 만들어 사용합니다.
-
----
-
-## 기술 스택
-
-- [Electron](https://www.electronjs.org/) v28
-- Vanilla JavaScript (번들러 없음)
-- electron-packager
-
----
-
-## 설정
-
-첫 실행 시 자동으로 설정 창이 열립니다.
-트레이 아이콘 우클릭 → **설정** 에서 언제든지 변경할 수 있습니다.
-
-- Obsidian Vault 폴더 경로
-- 글로벌 단축키
-- Windows 시작 시 자동 실행
+첫 실행 시 Vault 경로 설정 창이 자동으로 열립니다.
+트레이 아이콘 우클릭 → **설정** 에서 언제든지 변경 가능합니다.
