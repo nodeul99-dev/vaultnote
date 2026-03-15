@@ -20,11 +20,11 @@ function saveConfig(config) {
 
 // ── Floral Fantasy 배색 ───────────────────────────────────────
 const COLORS = [
-  { name: 'Sunnyside',       bg: '#FFFBEA', bar: '#FFF3A3' },
-  { name: 'Limeade',         bg: '#F2FAE8', bar: '#CDEEA0' },
-  { name: 'Blue Paradise',   bg: '#E8F6FB', bar: '#A4DCEE' },
-  { name: 'Positively Pink', bg: '#FFF0F5', bar: '#FFD0E2' },
-  { name: 'Guava',           bg: '#FFF0EC', bar: '#FFBDAC' },
+  { name: '햇살',   bg: '#FFFBE0', bar: '#FFE97A' },  // 노란→호박빛 amber
+  { name: '새잎',   bg: '#EDFAF4', bar: '#A8E6C3' },  // 라임→민트 teal
+  { name: '여명',   bg: '#EEF0FB', bar: '#BCC4F0' },  // 하늘→라벤더 blue
+  { name: '벚꽃',   bg: '#FFF0F2', bar: '#FFD5DC' },  // 핑크→로즈 rose
+  { name: '노을',   bg: '#FFF4EE', bar: '#FFCCA8' },  // 살몬→피치 peach
 ];
 
 // ── 상태 ──────────────────────────────────────────────────────
@@ -34,43 +34,30 @@ let settingsWin = null;
 let lastWinBounds = null; // { x, y, width, height }
 let nextColorIndex = 0;
 
-// ── 파일명 생성 ───────────────────────────────────────────────
-function generateFileName(dir) {
+// 창당 파일 정보: webContentsId → { filePath, createdAt }
+const windowData = new Map();
+// 예약된 파일명(아직 디스크에 없는): basename Set
+const reservedNames = new Set();
+
+// ── 파일명 예약 ───────────────────────────────────────────────
+function reserveFileName() {
   const now = new Date();
   const pad = (n) => String(n).padStart(2, '0');
   const base = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
   let name = `${base}.md`;
-  if (!fs.existsSync(path.join(dir, name))) return name;
   let i = 1;
-  while (fs.existsSync(path.join(dir, `${base}-${i}.md`))) i++;
-  return `${base}-${i}.md`;
+  while (fs.existsSync(path.join(config.vaultPath, name)) || reservedNames.has(name)) {
+    name = `${base}-${i}.md`;
+    i++;
+  }
+  reservedNames.add(name);
+  return { filePath: path.join(config.vaultPath, name), createdAt: now };
 }
 
 // ── 태그 추출 ─────────────────────────────────────────────────
 function extractTags(content) {
   const matches = content.match(/#([^\s#]+)/g) || [];
   return matches.map((t) => t.slice(1));
-}
-
-// ── .md 파일 저장 ─────────────────────────────────────────────
-function saveNoteFile(content) {
-  if (!config.vaultPath) throw new Error('Vault 경로가 설정되지 않았습니다.');
-
-  const now = new Date();
-  const pad = (n) => String(n).padStart(2, '0');
-  const dir = config.vaultPath;
-  fs.mkdirSync(dir, { recursive: true });
-
-  const fileName = generateFileName(dir);
-  const filePath = path.join(dir, fileName);
-
-  const tags = extractTags(content);
-  const created = now.toISOString().slice(0, 19);
-  const tagsStr = tags.length ? `[${tags.join(', ')}]` : '[]';
-
-  const fileContent = `---\ncreated: ${created}\ntags: ${tagsStr}\n---\n\n${content}`;
-  fs.writeFileSync(filePath, fileContent, 'utf-8');
-  return filePath;
 }
 
 // ── 메모 창 생성 ──────────────────────────────────────────────
@@ -109,9 +96,19 @@ function createNoteWindow() {
     query: { colorIndex: String(colorIndex) },
   });
 
+  // 창 생성 시 파일명 예약 (vault 설정된 경우)
+  if (config.vaultPath) {
+    const reserved = reserveFileName();
+    windowData.set(win.webContents.id, reserved);
+  }
+
   win.on('close', () => {
-    const b = win.getBounds();
-    lastWinBounds = b;
+    lastWinBounds = win.getBounds();
+    const data = windowData.get(win.webContents.id);
+    if (data) {
+      reservedNames.delete(path.basename(data.filePath));
+      windowData.delete(win.webContents.id);
+    }
   });
 
   return win;
@@ -125,7 +122,7 @@ function createSettingsWindow() {
   }
   settingsWin = new BrowserWindow({
     width: 480,
-    height: 360,
+    height: 500,
     resizable: false,
     frame: true,
     title: 'VaultNote 설정',
@@ -181,16 +178,27 @@ function registerShortcut() {
 ipcMain.handle('note:save', async (event, content) => {
   if (!config.vaultPath) {
     createSettingsWindow();
-    throw new Error('Vault 경로가 설정되지 않았습니다.');
+    return { ok: false, error: 'Vault 경로가 설정되지 않았습니다.' };
   }
   try {
-    const filePath = saveNoteFile(content);
-    const win = BrowserWindow.fromWebContents(event.sender);
-    win?.webContents.send('note:saved', { filePath });
-    return { ok: true, filePath };
+    // 이 창에 할당된 파일 정보 조회 (없으면 지금 예약)
+    let data = windowData.get(event.sender.id);
+    if (!data) {
+      data = reserveFileName();
+      windowData.set(event.sender.id, data);
+    }
+
+    fs.mkdirSync(config.vaultPath, { recursive: true });
+    const tags = extractTags(content);
+    const created = data.createdAt.toISOString().slice(0, 19);
+    const tagsStr = tags.length ? `[${tags.join(', ')}]` : '[]';
+    fs.writeFileSync(data.filePath, `---\ncreated: ${created}\ntags: ${tagsStr}\n---\n\n${content}`, 'utf-8');
+
+    // 파일이 실제로 생성됐으니 예약 목록에서 제거
+    reservedNames.delete(path.basename(data.filePath));
+
+    return { ok: true, filePath: data.filePath };
   } catch (err) {
-    const win = BrowserWindow.fromWebContents(event.sender);
-    win?.webContents.send('note:save-error', err.message);
     return { ok: false, error: err.message };
   }
 });
@@ -198,10 +206,15 @@ ipcMain.handle('note:save', async (event, content) => {
 ipcMain.handle('config:get', () => config);
 
 ipcMain.handle('config:set', (_, newConfig) => {
+  const vaultChanged = newConfig.vaultPath && newConfig.vaultPath !== config.vaultPath;
   config = { ...config, ...newConfig };
   saveConfig(config);
   registerShortcut();
-  // 자동 시작 설정 반영
+  if (vaultChanged) {
+    // 이미 열린 창들의 파일 예약을 초기화 — 다음 저장 시 새 경로로 재예약됨
+    windowData.clear();
+    reservedNames.clear();
+  }
   app.setLoginItemSettings({
     openAtLogin: !!config.autoStart,
     name: 'VaultNote',
@@ -237,6 +250,8 @@ ipcMain.handle('window:colors', () => COLORS);
 ipcMain.handle('window:bounds', (event) => {
   return BrowserWindow.fromWebContents(event.sender)?.getBounds() ?? null;
 });
+
+ipcMain.on('window:settings', () => createSettingsWindow());
 
 ipcMain.on('window:close', (event) => {
   BrowserWindow.fromWebContents(event.sender)?.close();

@@ -110,12 +110,34 @@
       user-select: text;
     }
     #editor::placeholder { color: rgba(0,0,0,0.2); }
+
+    #save-error {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(180,0,0,0.85);
+      color: #fff;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    #save-error.visible { opacity: 1; }
   </style>
 </head>
 <body>
   <div id="titlebar">
     <div id="color-swatches"></div>
     <div class="controls">
+      <button class="ctrl-btn" id="btn-settings" title="설정">
+        <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="6.5" cy="6.5" r="2"/>
+          <path d="M6.5 1v1.2M6.5 10.8V12M1 6.5h1.2M10.8 6.5H12M2.7 2.7l.85.85M9.45 9.45l.85.85M9.45 3.55l-.85.85M3.55 9.45l-.85.85"/>
+        </svg>
+      </button>
       <button class="ctrl-btn" id="btn-new" title="새 메모 (Ctrl+N)">
         <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
           <line x1="6.5" y1="2" x2="6.5" y2="11"/><line x1="2" y1="6.5" x2="11" y2="6.5"/>
@@ -140,6 +162,7 @@
   </div>
 
   <textarea id="editor" placeholder="메모를 입력하세요…"></textarea>
+  <div id="save-error"></div>
 
   <script>
     const editor      = document.getElementById('editor');
@@ -152,6 +175,8 @@
 
     let isPinned = false;
     let currentColorIndex = parseInt(new URLSearchParams(window.location.search).get('colorIndex') || '0');
+    let saveTimer = null;
+    const DEBOUNCE_MS = 1500;
 
     function applyColor(colors, index) {
       const c = colors[index];
@@ -175,22 +200,61 @@
       applyColor(colors, currentColorIndex);
     });
 
-    // 마우스 Y 좌표로 타이틀바 표시/숨김
+    // 마우스 Y 좌표로 타이틀바 표시/숨김 (RAF로 스로틀)
+    let rafPending = false;
+    let lastClientY = 0;
     document.addEventListener('mousemove', (e) => {
-      titlebar.classList.toggle('visible', e.clientY <= 40);
+      lastClientY = e.clientY;
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => {
+        titlebar.classList.toggle('visible', lastClientY <= 40);
+        rafPending = false;
+      });
     });
 
+    // 타이핑 멈추면 1.5초 후 자동저장
+    editor.addEventListener('input', () => {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        const content = editor.value.trim();
+        if (content) window.api.saveNote(content);
+      }, DEBOUNCE_MS);
+    });
+
+    const saveErrorEl = document.getElementById('save-error');
+    let errorTimer = null;
+    function showError(msg) {
+      clearTimeout(errorTimer);
+      saveErrorEl.textContent = msg;
+      saveErrorEl.classList.add('visible');
+      errorTimer = setTimeout(() => saveErrorEl.classList.remove('visible'), 3000);
+    }
+
     async function saveAndClose() {
+      clearTimeout(saveTimer);
       const content = editor.value.trim();
-      if (content) await window.api.saveNote(content);
+      if (content) {
+        const result = await window.api.saveNote(content);
+        if (!result.ok) {
+          showError(result.error || '저장 실패');
+          return; // 저장 실패 시 창 유지
+        }
+      }
       window.api.closeWindow();
     }
 
     document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.key === 's') { e.preventDefault(); window.api.saveNote(editor.value.trim()); }
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        clearTimeout(saveTimer);
+        const content = editor.value.trim();
+        if (content) window.api.saveNote(content);
+      }
       if (e.ctrlKey && e.key === 'n') { e.preventDefault(); window.api.newNote(); }
     });
 
+    document.getElementById('btn-settings').addEventListener('click', () => window.api.openSettings());
     btnNew.addEventListener('click', () => window.api.newNote());
     btnMin.addEventListener('click', () => window.api.minimizeWindow());
     btnClose.addEventListener('click', saveAndClose);
