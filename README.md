@@ -24,7 +24,8 @@ No cloud sync. No extra app. No friction. Just your thought, captured.
 ## Features
 
 - **⚡ Global shortcut** `Ctrl+Shift+N` — summon a new note from anywhere, instantly
-- **💾 Auto-save on close** — just close the note, it saves itself to your Vault
+- **💾 Auto-save while you type** — saves to your Vault 1.5 seconds after you stop typing, no action needed
+- **📄 One file per note** — each window maps to exactly one `.md` file; saving again overwrites it, never duplicates
 - **🏷️ Auto tag extraction** — write `#tag` inline, frontmatter is generated automatically
 - **🎨 5 color themes** — warm, handcrafted palette inspired by real sticky notes
 - **🪟 Multi-window** — keep multiple notes floating on your screen simultaneously
@@ -36,15 +37,15 @@ No cloud sync. No extra app. No friction. Just your thought, captured.
 
 ## How it saves
 
-Every note becomes a clean Markdown file directly in your Vault root:
+Each window gets its own file the moment it opens. The filename is locked in at creation time — saving again just overwrites it.
 
 ```
-{YourVault}/2026-03-14-1523.md
+{YourVault}/2026-03-15-1523.md
 ```
 
 ```markdown
 ---
-created: 2026-03-14T15:23:00
+created: 2026-03-15T15:23:00
 tags: [idea, todo]
 ---
 
@@ -53,7 +54,10 @@ Your note content here
 #idea #todo
 ```
 
-No subfolders. No special plugins. Just files that Obsidian already knows how to read.
+- Saves automatically 1.5s after you stop typing
+- `Ctrl+S` saves immediately
+- Closing the window does a final save — if it fails, the window stays open so you don't lose anything
+- No subfolders. No special plugins. Just files Obsidian already knows how to read.
 
 ---
 
@@ -105,8 +109,9 @@ VaultNote는 Windows용 데스크톱 메모 앱입니다.
 ### 주요 기능
 
 - **글로벌 단축키** `Ctrl+Shift+N` — 앱이 백그라운드에 있어도 새 메모 즉시 생성
-- **자동 저장** — X 버튼 클릭 시 Vault에 저장 후 닫힘
-- **Frontmatter 자동 생성** — `created`, `tags` (`#태그` 자동 파싱)
+- **자동 저장** — 타이핑 멈추면 1.5초 후 자동 저장. 창당 파일 1개 고정, 저장해도 중복 파일 없음
+- **안전한 닫기** — X 버튼 클릭 시 최종 저장 후 닫힘. 저장 실패 시 창 유지 (메모 손실 방지)
+- **Frontmatter 자동 생성** — `created` (창 생성 시각), `tags` (`#태그` 자동 파싱)
 - **5가지 색상 테마** — 독자적인 한국어 이름의 파스텔 팔레트
 - **다중 창** — 여러 메모를 동시에 띄울 수 있음
 - **미니멀 UI** — 평소엔 한 장의 메모지처럼, 상단에 커서를 올리면 메뉴 등장
